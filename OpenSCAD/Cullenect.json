@@ -3,6 +3,7 @@
     "parameterSets": {
         "New set 1": {
             "$fs": "0.01",
+            "Select_Output": "11",
             "Text1": "Cullenect",
             "Text1_Align": "left",
             "Text1_Font": "Open Sans",

@@ -1,4 +1,7 @@
-/* [Label Settings] */
+/* [General Settings] */
+//I want to generate...
+Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume]
+//model = "" // ["Cullenect label","Socket test fit","Socket Negative Volume"]
 // Width in gridfinity units
 label_width = 1; // .1
 // Generate V1 Latches for 1U labels?
@@ -220,21 +223,35 @@ module cullenect_socket(){
 	union(){
 		difference(){
 			translate([-socket_walls,-socket_walls,-1])
-				RoundedCube([labelX + (socket_walls * 2), socketY + (socket_walls * 2), labelZ + 1], 0.2);
+                color("Silver")
+                    RoundedCube([labelX + (socket_walls * 2), socketY + (socket_walls * 2), labelZ + 1], 0.2);
 			
 			color("Gray")
 				RoundedCube([socketX, socketY, labelZ + 1], 0.5);
 		}
 		translate([0,0,0.2])
-			cube([socketX, latchX, ribZ]);
+            color("Silver")
+                cube([socketX, latchX, ribZ]);
 		translate([0, socketY - latchX,0.2])
-			cube([socketX, latchX, ribZ]);
+            color("Silver")
+                cube([socketX, latchX, ribZ]);
 	}
 }
-cullenect_socket();
-		
-		
-		
+
+module cullenect_socket_negative(){
+
+	difference(){
+        color("Gray")
+			RoundedCube([socketX, socketY, labelZ], 0.5);
+        cullenect_socket();   
+    }
+        
+}
+
+// Generate Selected Model...
+         if (Select_Output == 10) {cullenect_socket();}
+    else if (Select_Output == 11) {cullenect_socket_negative();}
+    else                          {cullenect_label_text();}
 		
 		
 		
