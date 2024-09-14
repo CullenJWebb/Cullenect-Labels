@@ -1,0 +1,27 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "$fs": "0.01",
+            "Text1": "Cullenect",
+            "Text1_Align": "left",
+            "Text1_Font": "Open Sans",
+            "Text1_Font_Size": "6",
+            "Text1_Font_Style": "Regular",
+            "Text1_XY": "[0, 0]",
+            "Text2": "",
+            "Text2_Align": "right",
+            "Text2_Font": "Open Sans",
+            "Text2_Font_Size": "6",
+            "Text2_Font_Style": "Regular",
+            "Text2_XY": "[0, 0]",
+            "backward_compatible": "true",
+            "gridfinity": "true",
+            "labelXmm": "36",
+            "labelYmm": "11",
+            "labelZmm": "1.2",
+            "label_deboss": "false",
+            "label_width": "1"
+        }
+    }
+}
