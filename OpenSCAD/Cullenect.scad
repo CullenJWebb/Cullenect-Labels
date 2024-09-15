@@ -209,17 +209,14 @@ module cullenect_label_text(){
 
 *cullenect_label_text();
 
-// Socket and Socket Negative
-
-// Variables
+// Socket and Socket Negative Variables
 socket_offset = 0.3;
 socket_walls = 2;
 socketX = labelX + socket_offset;
 socketY = labelY + socket_offset;
 ribZ = 0.4;
-
+// Generate socket
 module cullenect_socket(){
-
 	union(){
 		difference(){
 			translate([-socket_walls,-socket_walls,-1])
@@ -232,12 +229,13 @@ module cullenect_socket(){
 		translate([0,0,0.2])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
-		translate([0, socketY - latchX,0.2])
+		translate([0, socketY - latchX,0.4])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
 	}
 }
 
+// Generate negative volume of socket
 module cullenect_socket_negative(){
 
 	difference(){
@@ -248,10 +246,35 @@ module cullenect_socket_negative(){
         
 }
 
+// Vertical socket variables
+vsocket_z = socketY + 1; // Vertical height with 45 degree ceiling
+
+
+// Generate vertical socket
+// Unlike the h-socket and label this starts with the negative volume due to easier rounded edges
+// Rounded edges are needed for the vertical printing of the ribbing
+module cullenect_vertical_socket() {
+	difference(){
+		// Create base 
+		union(){
+			vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
+			cube([socketX, vsocketY / 2, vsocket_z]);// front of socket, no rounding
+			RoundedCube([socketX, vsocketY, vsocket_z], 0.1);// front of socket, rounded inside around rib
+			translate([0,vsocketY,0])
+				cube([socketX,latchZ,vsocket_z]); // Middle of socket, to be cut away later by rounded cube for rib
+			translate([-0.2,vsocketY + latchZ,0])
+				RoundedCube([socketX + 0.4, vsocketY, vsocket_z], 0.1);
+		}
+		
+	}
+}
+cullenect_vertical_socket();
+
 // Generate Selected Model...
+module selected_model() {
          if (Select_Output == 10) {cullenect_socket();}
     else if (Select_Output == 11) {cullenect_socket_negative();}
     else                          {cullenect_label_text();}
-		
-		
+}
+*selected_model();
 		
