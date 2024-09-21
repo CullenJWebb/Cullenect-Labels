@@ -247,7 +247,8 @@ module cullenect_socket_negative(){
 }
 
 // Vertical socket variables
-vsocket_z = socketY + 1; // Vertical height with 45 degree ceiling
+vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
+vsocketZ = socketY + 1; // Vertical height with 45 degree ceiling
 
 
 // Generate vertical socket
@@ -257,14 +258,21 @@ module cullenect_vertical_socket() {
 	difference(){
 		// Create base 
 		union(){
-			vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
-			cube([socketX, vsocketY / 2, vsocket_z]);// front of socket, no rounding
-			RoundedCube([socketX, vsocketY, vsocket_z], 0.1);// front of socket, rounded inside around rib
+			cube([socketX, vsocketY / 2, vsocketZ]);// front of socket, no rounding
+			RoundedCube([socketX, vsocketY, vsocketZ], 0.1);// front of socket, rounded inside around rib
 			translate([0,vsocketY,0])
-				cube([socketX,latchZ,vsocket_z]); // Middle of socket, to be cut away later by rounded cube for rib
+				cube([socketX,latchZ,vsocketZ]); // Middle of socket, to be cut away later by rounded cube for rib
 			translate([-0.2,vsocketY + latchZ,0])
-				RoundedCube([socketX + 0.4, vsocketY, vsocket_z], 0.1);
+				RoundedCube([socketX + 0.4, vsocketY, vsocketZ], 0.1);
 		}
+		// Remove rounded ribs
+		translate([-1,vsocketY,0])
+			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
+		translate([socketX - latchX,vsocketY,0])
+			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
+		// remove 45 degree top
+		translate([-2,labelZ / 2,vsocketY])
+			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
 		
 	}
 }
