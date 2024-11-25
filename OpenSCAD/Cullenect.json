@@ -49,7 +49,11 @@
         },
         "New set 3": {
             "$fs": "0.01",
+<<<<<<< Updated upstream
             "Select_Output": "21",
+=======
+            "Select_Output": "10",
+>>>>>>> Stashed changes
             "Text1": "Cullenect",
             "Text1_Align": "left",
             "Text1_Font": "Open Sans",
@@ -65,7 +69,11 @@
             "backward_compatible": "true",
             "gridfinity": "true",
             "labelXmm": "36",
+<<<<<<< Updated upstream
             "labelYmm": "27",
+=======
+            "labelYmm": "11",
+>>>>>>> Stashed changes
             "labelZmm": "1.2",
             "label_deboss": "false",
             "label_width": "1"
