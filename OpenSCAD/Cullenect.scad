@@ -229,7 +229,7 @@ module cullenect_socket(){
 		translate([0,0,0.2])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
-		translate([0, socketY - latchX,0.4])
+		translate([0, socketY - latchX,0.2])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
 	}
