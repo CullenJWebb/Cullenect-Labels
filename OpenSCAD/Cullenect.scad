@@ -1,13 +1,6 @@
-<<<<<<< Updated upstream
-/* [General Settings] */
-//I want to generate...
-Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume, 21:Vertical Socket Negative Volume]
-=======
-/* TODO: Color models re: https://forum.bambulab.com/t/paramatric-model-maker-v0-9-0-support-multi-color-modeling/100160 */
 /* [General Settings] */
 //I want to generate...
 Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume]
->>>>>>> Stashed changes
 //model = "" // ["Cullenect label","Socket test fit","Socket Negative Volume"]
 // Width in gridfinity units
 label_width = 1; // .1
@@ -236,7 +229,7 @@ module cullenect_socket(){
 		translate([0,0,0.2])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
-		translate([0, socketY - latchX,0.2])
+		translate([0, socketY - latchX,0.4])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
 	}
@@ -253,80 +246,10 @@ module cullenect_socket_negative(){
         
 }
 
-// Vertical socket variables
-<<<<<<< Updated upstream
-vsocket_z = socketY + 1; // Vertical height with 45 degree ceiling
-=======
-vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
-vsocketZ = socketY + 1; // Vertical height with 45 degree ceiling
->>>>>>> Stashed changes
-
-
-// Generate vertical socket
-// Unlike the h-socket and label this starts with the negative volume due to easier rounded edges
-// Rounded edges are needed for the vertical printing of the ribbing
-module cullenect_vertical_socket() {
-<<<<<<< Updated upstream
-    color("Silver")
-	difference(){
-		// Create base 
-		union(){
-			vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
-			cube([socketX, vsocketY / 2, vsocket_z]);// front of socket, no rounding
-			RoundedCube([socketX, vsocketY, vsocket_z], 0.1);// front of socket, rounded inside around rib
-			translate([0,vsocketY,0])
-				cube([socketX,latchZ,vsocket_z]); // Middle of socket, to be cut away later by rounded cube for rib
-			translate([-0.2,vsocketY + latchZ,0])
-				RoundedCube([socketX + 0.4, vsocketY, vsocket_z], 0.1);
-		}
-        // remove 45 from top
-        translate([-1,-5,vsocket_z + 5]){
-            rotate([-45,0,0]){
-                cube([socketX + 2,10,10]);
-            }
-        }
-		
-	}
-    
-}
-=======
-	difference(){
-		// Create base 
-		union(){
-			cube([socketX, vsocketY / 2, vsocketZ]);// front of socket, no rounding
-			RoundedCube([socketX, vsocketY, vsocketZ], 0.1);// front of socket, rounded inside around rib
-			translate([0,vsocketY,0])
-				cube([socketX,latchZ,vsocketZ]); // Middle of socket, to be cut away later by rounded cube for rib
-			translate([-0.2,vsocketY + latchZ,0])
-				RoundedCube([socketX + 0.4, vsocketY, vsocketZ], 0.1);
-		}
-		// Remove rounded ribs
-		translate([-1,vsocketY,0])
-			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
-		translate([socketX - latchX,vsocketY,0])
-			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
-		// remove 45 degree top
-		translate([-2,labelZ / 2,vsocketY])
-			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
-		
-	}
-}
-// cullenect_vertical_socket();
->>>>>>> Stashed changes
-
 // Generate Selected Model...
 module selected_model() {
          if (Select_Output == 10) {cullenect_socket();}
     else if (Select_Output == 11) {cullenect_socket_negative();}
-<<<<<<< Updated upstream
-    else if (Select_Output == 21) {cullenect_vertical_socket();}
     else                          {cullenect_label_text();}
 }
 selected_model();
-		
-=======
-    else                          {cullenect_label_text();}
-}
-selected_model();
-		
->>>>>>> Stashed changes
