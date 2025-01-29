@@ -229,7 +229,7 @@ module cullenect_socket(){
 		translate([0,0,0.2])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
-		translate([0, socketY - latchX,0.4])
+		translate([0, socketY - latchX,0.2])
             color("Silver")
                 cube([socketX, latchX, ribZ]);
 	}
@@ -276,7 +276,8 @@ module cullenect_vertical_socket() {
 		
 	}
 }
-cullenect_vertical_socket();
+*cullenect_vertical_socket();
+// Vertical Socket still under development
 
 // Generate Selected Model...
 module selected_model() {
@@ -284,5 +285,5 @@ module selected_model() {
     else if (Select_Output == 11) {cullenect_socket_negative();}
     else                          {cullenect_label_text();}
 }
-*selected_model();
+selected_model();
 		
