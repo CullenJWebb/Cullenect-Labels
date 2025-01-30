@@ -248,7 +248,7 @@ module cullenect_socket_negative(){
 
 // Vertical socket variables
 vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
-vsocketZ = socketY + 1; // Vertical height with 45 degree ceiling
+vsocketZ = socketY + 2; // Vertical height with 45 degree ceiling
 
 
 // Generate vertical socket
@@ -271,12 +271,13 @@ module cullenect_vertical_socket() {
 		translate([socketX - latchX,vsocketY,0])
 			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
 		// remove 45 degree top
-		translate([-2,labelZ / 2,vsocketY])
-			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
+		translate([-(latchX + 1),(vsocketY * 2) + latchZ,socketY])
+            rotate([45,0,0])
+			cube([2 + socketX + latchX * 2, latchX + 2, (vsocketY * 8)], false);
 		
 	}
 }
-*cullenect_vertical_socket();
+cullenect_vertical_socket();
 // Vertical Socket still under development
 
 // Generate Selected Model...
@@ -285,5 +286,5 @@ module selected_model() {
     else if (Select_Output == 11) {cullenect_socket_negative();}
     else                          {cullenect_label_text();}
 }
-selected_model();
+*selected_model();
 		
