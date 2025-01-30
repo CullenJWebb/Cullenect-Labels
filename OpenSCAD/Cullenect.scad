@@ -1,6 +1,6 @@
 /* [General Settings] */
 //I want to generate...
-Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume]
+Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume, 20:Vertical Socket, 21:Vertical Socket Negative]
 //model = "" // ["Cullenect label","Socket test fit","Socket Negative Volume"]
 // Width in gridfinity units
 label_width = 1; // .1
@@ -247,44 +247,56 @@ module cullenect_socket_negative(){
 }
 
 // Vertical socket variables
-vsocketY = labelZ - latchZ - 0.2; // define starting pos and depth
+vsocketOffset = 0.2; // Extra space for latch
+vsocketX = labelX + vsocketOffset;
+vsocketY = labelZ - latchZ - vsocketOffset; // define starting pos and depth
 vsocketZ = socketY + 2; // Vertical height with 45 degree ceiling
+vsocketDepth = (vsocketY * 2) + latchZ; // Total depth of vsocket
 
 
 // Generate vertical socket
 // Unlike the h-socket and label this starts with the negative volume due to easier rounded edges
 // Rounded edges are needed for the vertical printing of the ribbing
-module cullenect_vertical_socket() {
+module cullenect_vertical_socket_negative() {
 	difference(){
 		// Create base 
 		union(){
-			cube([socketX, vsocketY / 2, vsocketZ]);// front of socket, no rounding
-			RoundedCube([socketX, vsocketY, vsocketZ], 0.1);// front of socket, rounded inside around rib
+			cube([vsocketX, (vsocketY / 2), vsocketZ]);// front of socket, no rounding
+			RoundedCube([vsocketX, vsocketY + 0.001, vsocketZ], 0.1);// front of socket, rounded inside around rib
 			translate([0,vsocketY,0])
-				cube([socketX,latchZ,vsocketZ]); // Middle of socket, to be cut away later by rounded cube for rib
-			translate([-0.2,vsocketY + latchZ,0])
-				RoundedCube([socketX + 0.4, vsocketY, vsocketZ], 0.1);
+				cube([vsocketX,latchZ,vsocketZ]); // Middle of socket, to be cut away later by rounded cube for rib
+			translate([-vsocketOffset,vsocketY + latchZ,0])
+				RoundedCube([vsocketX + (vsocketOffset * 2), vsocketY, vsocketZ], 0.1);
 		}
 		// Remove rounded ribs
 		translate([-1,vsocketY,0])
 			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
-		translate([socketX - latchX,vsocketY,0])
+		translate([vsocketX - latchX,vsocketY,0])
 			RoundedCube([latchX + 1, latchZ, vsocketZ], 0.1);
 		// remove 45 degree top
 		translate([-(latchX + 1),(vsocketY * 2) + latchZ,socketY])
             rotate([45,0,0])
-			cube([2 + socketX + latchX * 2, latchX + 2, (vsocketY * 8)], false);
+                cube([2 + vsocketX + latchX * 2, latchX + 3, (vsocketY * 8)], false);
 		
 	}
 }
-cullenect_vertical_socket();
-// Vertical Socket still under development
+
+// Generate vsocket test fitment
+module cullenect_vertical_socket() {
+    difference(){
+        translate([-(socket_walls+vsocketOffset),0,-socket_walls])
+            cube([labelX + (vsocketOffset * 2) +(socket_walls * 2),vsocketDepth + 1,vsocketZ + (socket_walls * 1.5)]);
+        cullenect_vertical_socket_negative();
+    }
+}
 
 // Generate Selected Model...
 module selected_model() {
          if (Select_Output == 10) {cullenect_socket();}
     else if (Select_Output == 11) {cullenect_socket_negative();}
+    else if (Select_Output == 20) {cullenect_vertical_socket();}
+    else if (Select_Output == 21) {cullenect_vertical_socket_negative();}
     else                          {cullenect_label_text();}
 }
-*selected_model();
+selected_model();
 		
