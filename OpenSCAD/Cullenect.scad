@@ -290,7 +290,7 @@ module cullenect_vertical_socket() {
     }
 }
 
-// Hardware icon variables
+// Fastener icon variables
 driverX = 6; // Size of driver icon
 driverWidth = 1; // Width of "most" driver shapes inside icon
 driverLength = 5.333; // Length of most driver shapes inside icon
@@ -494,15 +494,88 @@ module cullenect_shaft(shaft="machine",threads="full"){
     // Output
     if (shaft == "machine")machine();
     if (shaft == "tapping")tapping();
-    if ((threads!="none"))#threads();
+    if ((threads!="none"))threads();
     
 }
 
-difference(){
+// Hardware Variables
+hardX = headY;
+hardNegative = hardX * 0.6;
+
+// Generate Hardware
+module cullenect_hardware(hardware) {
+
+    // Washer
+    module washer(){
+        difference(){
+            cylinder(h=layer, d=hardX, center=true);
+            cylinder(h=layer, d=hardNegative, center=true);
+        }
+    }
+    
+    // Locking Washer
+    module washer_locking(){
+        difference(){
+            washer();
+            translate([-hardX/5,hardX/3,0])
+                rotate([0,0,45])
+                    cube([hardX/5,hardX/2,layer], true);
+        }
+    }
+
+    // Threaded Insert
+    module threaded_insert(){
+    
+        stripeX = hardX*0.0849;
+        stripeY = hardX*0.1376;
+        stripeStep = stripeX + hardX*0.0776;
+    
+        module stripePoly(){
+            linear_extrude(layer)
+                polygon(points=[[0,0],[stripeX,0],[stripeX*2.5,-stripeY],[stripeX*1.5,-stripeY]]);
+        }
+    
+        translate([-hardX/2,-hardX/2,layer/2])
+            difference(){
+                union(){
+                    RoundedCube([hardX, hardX/4, layer], 0.2); // Top of insert
+                    translate([1,0,0])
+                        cube([hardX-2, hardX, layer]);// Middle of insert
+                    translate([0,hardX*0.75,0])
+                        RoundedCube([hardX, hardX/4, layer], 0.2);// Bottom of insert
+                }
+                translate([-1,hardX/4,0])
+                    RoundedCube([hardX/5 + 1, hardX/2, layer], 0.2);
+                translate([hardX-hardX/5,hardX/4,0])
+                    RoundedCube([hardX/5 + 1, hardX/2, layer], 0.2);
+                translate([hardX*0.06,hardX*0.19,0])
+                    for(i = [0:1:4]){
+                        translate([(i*stripeStep),0,0])
+                            stripePoly();
+                        translate([(i*stripeStep),hardX*0.75,0])
+                            stripePoly();
+                    }
+            }
+    }
+    
+    // Nut
+    module nut(){
+        cylinder(h=layer, d=hardX, $fs=6, center=true);
+    }
+    
+    // Output
+    if (hardware == "washer")washer();
+    if (hardware == "washer_locking")washer_locking();
+    if (hardware == "threaded_insert")threaded_insert();
+    if (hardware == "nut")nut();
+}
+cullenect_hardware("nut");
+
+*difference(){
     cullenect_head(head="pan");
     cullenect_driver(driver="torx");
 }
-cullenect_shaft(shaft="machine",threads="partial");
+*cullenect_shaft(shaft="machine",threads="partial");
 
 // Generate Selected Model...
 module selected_model() {
