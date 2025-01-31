@@ -43,6 +43,7 @@ Text2_XY = [0,0]; // .1
 /* [Advanced] */
 // Increase or decrease resolution of certain details
 $fs = 0.01;  // .01
+$fa = 1;
 
 // Use gridfinity U
 gridfinity = true;
@@ -74,7 +75,6 @@ fudge = 0.0001; // Fix render for exact booleans
     height = size[1] - offsetfix;
     depth = size[2];
 	
-
     translate([radius, radius, 0]) linear_extrude(height = depth) offset(r = radius) square([width, height]);
 }
 
@@ -294,6 +294,9 @@ module cullenect_vertical_socket() {
 driverX = 6; // Size of driver icon
 driverWidth = 1; // Width of "most" driver shapes inside icon
 driverLength = 5.333; // Length of most driver shapes inside icon
+headY = driverX * 1.666666666666667; // Size of fastener heads
+shaftX = headY * 0.856; // Length of fastener shaft
+shaftY = headY/2;
 
 // Generate Driver Icon
 module cullenect_driver(driver="none") {
@@ -345,7 +348,7 @@ module cullenect_driver(driver="none") {
             rotate([0,0,180])translate([(length) / 2,0,0])torx_cyl();
         }
         
-        // Bring everything together
+        // Torx: Bring everything together
         difference(){
             union(){
                 torx_long();
@@ -356,8 +359,29 @@ module cullenect_driver(driver="none") {
             rotate([0,0,30])torx_long(length=(driverLength-driverWidth)*0.92,cube=false);
             rotate([0,0,90])torx_long(length=(driverLength-driverWidth)*0.92,cube=false);
             rotate([0,0,-30])torx_long(length=(driverLength-driverWidth)*0.92,cube=false);
-        }
-        
+        } 
+    }
+    
+    // Hex
+    module hex(){
+        cylinder(h=layer, d=driverX-1, $fn=6, center=true);
+    }
+    
+    // Square
+    module square(){
+        rotate([0,0,45])
+            cylinder(h=layer, d=driverX, $fn=4, center=true);
+    }
+    
+    // Triangle
+    module triangle(){
+        rotate([0,0,-30])
+            cylinder(h=layer, d=driverX, $fn=3, center=true);
+    }
+    
+    // Security
+    module security(){
+        cylinder(h=layer, d=driverX/4, $fa=1, center=true);
     }
     
     // Output
@@ -367,12 +391,118 @@ module cullenect_driver(driver="none") {
     if (driver == "phillips_slot")phillips_slot();
     if (driver == "phillips_square")phillips_square();
     if (driver == "torx")torx();
-}
-difference(){
-    cullenect_driver(driver="blank");
-    cullenect_driver(driver="torx");
+    if (driver == "hex")hex();
+    if (driver == "square")square();
+    if (driver == "triangle")triangle();
+    if (driver == "security")security();
 }
 
+// Generate Screw Head
+module cullenect_head(head="socket"){
+    
+    // Socket
+    module socket(){
+        cube([driverX,headY,layer], true);
+    }
+    
+    // Countersunk
+    module countersunk(){
+        translate([0,0,-layer/2])
+            linear_extrude(layer)
+                polygon(points=[[-driverX/2,headY/4],[driverX/2,headY/2],[driverX/2,-headY/2],[-driverX/2,-headY/4]]);
+    }
+    
+    // Round
+    module roundh(){
+        difference(){
+            translate([-driverX/3,0,0])
+                union(){
+                    cylinder(h=layer, d=headY, $fa=1, center=true);
+                    translate([-driverX/4,0,0])
+                        cube([driverX/2,headY,layer], true);
+                }
+            translate([-driverX,0,0])
+                cube([driverX,headY,layer], true);
+        }
+    }
+    
+    // Pan
+    module pan(){
+        union(){
+            translate([-driverX/2,-headY/2,-layer/2])
+                RoundedCube([driverX, headY, layer], 2.0);
+            translate([-driverX/4,0,0])
+                cube([driverX/2,headY,layer], true);
+        }
+    }
+    
+    // Output
+    if (head == "socket")socket();
+    if (head == "countersunk")countersunk();
+    if (head == "roundh")roundh();
+    if (head == "pan")pan();
+}
+
+// Generate Fastener Shaft
+module cullenect_shaft(shaft="machine",threads="full"){
+    
+    // Machine
+    module machine(){
+        translate([-(driverX/2 + shaftX/2),0,0])
+            cube([shaftX,shaftY,layer], true);
+    }
+    
+    // Tapping
+    module tapping(){
+        difference(){
+            machine();
+            translate([-(driverX/2 + shaftX),shaftY/2,0])
+                rotate([0,0,45])
+                    cube([shaftY*0.7,shaftY*0.7,layer], true);
+            translate([-(driverX/2 + shaftX),-shaftY/2,0])
+                rotate([0,0,45])
+                    cube([shaftY*0.7,shaftY*0.7,layer], true);
+        }
+    }
+    
+    // Threads
+    function get_thread_num() = 
+        (threads == "full" && shaft == "machine") ? 6 :
+        (threads == "partial" && shaft == "machine") ? 3 :
+        (threads == "full" && shaft == "tapping") ? 4 :
+        (threads == "partial" && shaft == "tapping") ? 2 :
+        6;
+    thread_num = get_thread_num();
+    threadX = shaftY/5;
+    thread_step = (threadX*1.41421);
+    thread_pos_full = driverX/2 + thread_step/2;
+    thread_pos_partial = driverX/2 + thread_step/2 + (thread_num * thread_step);
+    thread_pos_x = (threads=="partial") ? thread_pos_partial : thread_pos_full;
+    
+    module threads(num=thread_num,pos=thread_pos_x){
+        translate([-pos,0,0])
+            for(i = [0:1:num-1]){
+                translate([-(i*thread_step),shaftY/2,0])
+                    rotate([0,0,45])
+                        cube([threadX,threadX,layer], true);
+                translate([-(i*thread_step),-shaftY/2,0])
+                    rotate([0,0,45])
+                        cube([threadX,threadX,layer], true);
+            }
+    }
+    
+    // Output
+    if (shaft == "machine")machine();
+    if (shaft == "tapping")tapping();
+    if ((threads!="none"))#threads();
+    
+}
+
+difference(){
+    cullenect_head(head="pan");
+    cullenect_driver(driver="torx");
+}
+cullenect_shaft(shaft="machine",threads="partial");
 
 // Generate Selected Model...
 module selected_model() {
