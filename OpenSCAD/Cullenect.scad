@@ -63,6 +63,8 @@ labelY = (gridfinity) ? 11 : labelYmm;
 labelZ = (gridfinity) ? 1.2 : labelZmm;
 latchX = 0.2; // Width of socket on label walls
 latchZ = 0.6; // Z-height of wall socket
+layer = 0.2; // Layer height of text and icons
+fudge = 0.0001; // Fix render for exact booleans
 
 
 // Tool for rounded cubes
@@ -207,8 +209,6 @@ module cullenect_label_text(){
 	}
 }
 
-*cullenect_label_text();
-
 // Socket and Socket Negative Variables
 socket_offset = 0.3;
 socket_walls = 2;
@@ -290,6 +290,90 @@ module cullenect_vertical_socket() {
     }
 }
 
+// Hardware icon variables
+driverX = 6; // Size of driver icon
+driverWidth = 1; // Width of "most" driver shapes inside icon
+driverLength = 5.333; // Length of most driver shapes inside icon
+
+// Generate Driver Icon
+module cullenect_driver(driver="none") {
+    
+    // Blank
+    module blank(){
+        cylinder(h=layer, d=driverX, center=true, $fa=1);
+    }
+    
+    // Slot
+    module slot(driverLength=driverLength){
+        cube([driverLength,driverWidth,layer], true);
+    }
+    
+    // Phillips
+    module phillips(){
+        union(){
+            slot();
+            rotate([0,0,90])slot();
+        }
+    }
+    
+    // Phillips Slot
+    module phillips_slot(){
+        union(){
+            slot();
+            rotate([0,0,90])slot(driverLength=driverLength-2);
+        }
+    }
+    
+    // Phillips Square
+    module phillips_square(){
+        union(){
+            slot();
+            rotate([0,0,90])slot();
+            rotate([0,0,45])cube([driverWidth*2.8,driverWidth*2.8,layer],true);
+        }
+    }
+    
+    // Torx
+    module torx(){
+        module torx_cyl() {cylinder(h=layer, d=driverWidth, center=true, $fa=1);};
+        module torx_long(length=driverLength-driverWidth,cube=true){
+            // Connecting cube
+            if (cube==true){cube([length, driverWidth, layer], true);}
+            // Rounded ends
+            translate([(length) / 2,0,0])torx_cyl();
+            // Rounded ends again but oposite side (copy/paste)
+            rotate([0,0,180])translate([(length) / 2,0,0])torx_cyl();
+        }
+        
+        // Bring everything together
+        difference(){
+            union(){
+                torx_long();
+                rotate([0,0,120])torx_long();
+                rotate([0,0,60])torx_long();
+                cylinder(h=layer, d=driverLength*0.69, center=true, $fa=1); // joining cylinder in the middle
+            }
+            rotate([0,0,30])torx_long(length=(driverLength-driverWidth)*0.92,cube=false);
+            rotate([0,0,90])torx_long(length=(driverLength-driverWidth)*0.92,cube=false);
+            rotate([0,0,-30])torx_long(length=(driverLength-driverWidth)*0.92,cube=false);
+        }
+        
+    }
+    
+    // Output
+    if (driver == "blank")blank();
+    if (driver == "slot")slot();
+    if (driver == "phillips")phillips();
+    if (driver == "phillips_slot")phillips_slot();
+    if (driver == "phillips_square")phillips_square();
+    if (driver == "torx")torx();
+}
+difference(){
+    cullenect_driver(driver="blank");
+    cullenect_driver(driver="torx");
+}
+
+
 // Generate Selected Model...
 module selected_model() {
          if (Select_Output == 10) {cullenect_socket();}
@@ -298,5 +382,5 @@ module selected_model() {
     else if (Select_Output == 21) {cullenect_vertical_socket_negative();}
     else                          {cullenect_label_text();}
 }
-selected_model();
+*selected_model();
 		
