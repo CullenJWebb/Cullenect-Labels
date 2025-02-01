@@ -40,6 +40,17 @@ Text2_Font_Style = "Regular"; // [Regular,Black,Bold,ExtraBol,ExtraLight,Light,M
 // Adjust X and Y Position
 Text2_XY = [0,0]; // .1
 
+/* [Fastener Icon] */
+Show_Fastener = false;
+Fastener_Head="socket"; // [none:None, socket:Socket, countersunk:Countersunk, round:Round, pan:Pan]
+Fastener_Shaft="machine"; // [none:None, machine:Machine, tapping:Tapping]
+Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillips_slot:Phillips Slot, phillips_square:Phillips Square, torx:Torx/Star, hex:Hex, square:Robertson/Square, triangle:Triangle]
+// Toggle securty nub in center of driver
+Fastener_Driver_Security=false;
+
+/* [Hardware Icon] */
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut (side), tnut_2:T-Nut (top)]
+
 /* [Advanced] */
 // Increase or decrease resolution of certain details
 $fs = 0.01;  // .01
@@ -566,8 +577,21 @@ module cullenect_hardware(hardware) {
         }
     }
     
+    // Nut Nylon Lock
+    module nut_nylon(){
+        difference(){
+            cylinder(h=layer, d=hardX, $fs=6, center=true);
+            cylinder(h=layer, d=hardNegative, center=true);
+        }
+        
+        #difference(){
+            cylinder(h=layer, d=hardNegative*0.8, center=true);
+            cylinder(h=layer, d=hardNegative*0.6, center=true);
+        }
+    }
+    
     // T-Nut 1
-    module tnut1(){
+    module tnut_1(){
     
         tnutY = hardX*0.66;
         tnutY2 = hardX*0.88;
@@ -593,7 +617,7 @@ module cullenect_hardware(hardware) {
     
     
     // T-Nut 2
-    module tnut2(){
+    module tnut_2(){
         tnutY = hardX*0.8;
         tnutX = hardX*1.456;
         slotX = hardX*0.08;
@@ -616,8 +640,7 @@ module cullenect_hardware(hardware) {
                     translate([hardX/4+hardX*0.03945+((slotX+slotStep)*i),-slotY/2,-layer/2])
                         RoundedCube([slotX, slotY, layer], 0.25);
             }
-        }
-        
+        } 
     }
     
     // Output
@@ -625,10 +648,11 @@ module cullenect_hardware(hardware) {
     if (hardware == "washer_locking")washer_locking();
     if (hardware == "threaded_insert")threaded_insert();
     if (hardware == "nut")nut();
-    if (hardware == "tnut1")tnut1();
-    if (hardware == "tnut2")tnut2();
+    if (hardware == "nut_nylon")nut_nylon();
+    if (hardware == "tnut_1")tnut_1();
+    if (hardware == "tnut_2")tnut_2();
 }
-cullenect_hardware("tnut2");
+cullenect_hardware("nut_nylon");
 
 *difference(){
     cullenect_head(head="pan");
