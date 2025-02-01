@@ -560,7 +560,64 @@ module cullenect_hardware(hardware) {
     
     // Nut
     module nut(){
-        cylinder(h=layer, d=hardX, $fs=6, center=true);
+        difference(){
+            cylinder(h=layer, d=hardX, $fs=6, center=true);
+            cylinder(h=layer, d=hardNegative, center=true);
+        }
+    }
+    
+    // T-Nut 1
+    module tnut1(){
+    
+        tnutY = hardX*0.66;
+        tnutY2 = hardX*0.88;
+        tnutX = hardX*1.456;
+        tnutX2 = hardX*0.728;
+        tnutCorner = hardX*0.4714;
+        
+        difference(){
+            translate([-tnutX/2,-tnutY/2,-layer/2])
+                union(){
+                    RoundedCube([tnutX, tnutY, layer], 0.5);
+                    translate([(tnutX-tnutX2)/2,0,0])
+                        RoundedCube([tnutX2, tnutY2, layer], 0.5);
+                }
+                translate([-tnutX/2,-tnutY/2,])
+                    rotate([0,0,45])
+                        cube([tnutCorner,tnutCorner,layer],true);
+                translate([tnutX/2,-tnutY/2,])
+                    rotate([0,0,45])
+                        cube([tnutCorner,tnutCorner,layer],true);
+        }
+    }
+    
+    
+    // T-Nut 2
+    module tnut2(){
+        tnutY = hardX*0.8;
+        tnutX = hardX*1.456;
+        slotX = hardX*0.08;
+        slotY = hardX*0.4;
+        slotStep = hardX*0.0518;
+        difference(){
+            translate([-tnutX/2,-tnutY/2,-layer/2]){
+                union(){
+                    RoundedCube([tnutX, tnutY, layer], 3.33);
+                    RoundedCube([tnutX/2, tnutY/2, layer], 0.5);
+                    translate([tnutX/2,tnutY/2,0])
+                        RoundedCube([tnutX/2, tnutY/2, layer], 0.5);
+                }
+            }
+            cylinder(h=layer, d=hardX/2, center=true);
+            #for(i = [0:1:2]){
+                translate([hardX/4+hardX*0.03945+((slotX+slotStep)*i),-slotY/2,-layer/2])
+                    RoundedCube([slotX, slotY, layer], 0.25);
+                rotate([0,0,180])
+                    translate([hardX/4+hardX*0.03945+((slotX+slotStep)*i),-slotY/2,-layer/2])
+                        RoundedCube([slotX, slotY, layer], 0.25);
+            }
+        }
+        
     }
     
     // Output
@@ -568,8 +625,10 @@ module cullenect_hardware(hardware) {
     if (hardware == "washer_locking")washer_locking();
     if (hardware == "threaded_insert")threaded_insert();
     if (hardware == "nut")nut();
+    if (hardware == "tnut1")tnut1();
+    if (hardware == "tnut2")tnut2();
 }
-cullenect_hardware("nut");
+cullenect_hardware("tnut2");
 
 *difference(){
     cullenect_head(head="pan");
