@@ -42,8 +42,9 @@ Text2_XY = [0,0]; // .1
 
 /* [Fastener Icon] */
 Show_Fastener = false;
-Fastener_Head="socket"; // [none:None, socket:Socket, countersunk:Countersunk, round:Round, pan:Pan]
+Fastener_Head="socket"; // [none:None, socket:Socket, countersunk:Countersunk, roundh:Round, pan:Pan]
 Fastener_Shaft="machine"; // [none:None, machine:Machine, tapping:Tapping]
+Fastener_Threads="full"; // [none:None, full:Full, partial:Partial]
 Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillips_slot:Phillips Slot, phillips_square:Phillips Square, torx:Torx/Star, hex:Hex, square:Robertson/Square, triangle:Triangle]
 // Toggle securty nub in center of driver
 Fastener_Driver_Security=false;
@@ -585,7 +586,7 @@ module cullenect_hardware(hardware) {
             cylinder(h=layer, d=hardNegative, center=true);
         }
         
-        #difference(){
+        difference(){
             cylinder(h=layer, d=hardNegative*0.8, center=true);
             cylinder(h=layer, d=hardNegative*0.6, center=true);
         }
@@ -600,19 +601,23 @@ module cullenect_hardware(hardware) {
         tnutX2 = hardX*0.728;
         tnutCorner = hardX*0.4714;
         
-        difference(){
-            translate([-tnutX/2,-tnutY/2,-layer/2])
-                union(){
-                    RoundedCube([tnutX, tnutY, layer], 0.5);
-                    translate([(tnutX-tnutX2)/2,0,0])
-                        RoundedCube([tnutX2, tnutY2, layer], 0.5);
-                }
-                translate([-tnutX/2,-tnutY/2,])
-                    rotate([0,0,45])
-                        cube([tnutCorner,tnutCorner,layer],true);
-                translate([tnutX/2,-tnutY/2,])
-                    rotate([0,0,45])
-                        cube([tnutCorner,tnutCorner,layer],true);
+        // TODO: Adjust size of tnuts and remove this right-aligned translate
+        // They should all be the same size and not require special translates for each
+        translate([-((tnutX-hardX)/2),0,0]){
+            difference(){
+                translate([-tnutX/2,-tnutY2/2,-layer/2])
+                    union(){
+                        #RoundedCube([tnutX, tnutY, layer], 0.5);
+                        translate([(tnutX-tnutX2)/2,0,0])
+                            RoundedCube([tnutX2, tnutY2, layer], 0.5);
+                    }
+                    #translate([-tnutX/2,-tnutY/2,])
+                        rotate([0,0,45])
+                            cube([tnutCorner,tnutCorner,layer],true);
+                    translate([tnutX/2,-tnutY/2,])
+                        rotate([0,0,45])
+                            cube([tnutCorner,tnutCorner,layer],true);
+            }
         }
     }
     
@@ -624,24 +629,29 @@ module cullenect_hardware(hardware) {
         slotX = hardX*0.08;
         slotY = hardX*0.4;
         slotStep = hardX*0.0518;
-        difference(){
-            translate([-tnutX/2,-tnutY/2,-layer/2]){
-                union(){
-                    RoundedCube([tnutX, tnutY, layer], 3.33);
-                    RoundedCube([tnutX/2, tnutY/2, layer], 0.5);
-                    translate([tnutX/2,tnutY/2,0])
+        
+        // TODO: Adjust size of tnuts and remove this right-aligned translate
+        // They should all be the same size and not require special translates for each
+        translate([-((tnutX-hardX)/2),0,0]){
+            difference(){
+                translate([-tnutX/2,-tnutY/2,-layer/2]){
+                    union(){
+                        RoundedCube([tnutX, tnutY, layer], 3.33);
                         RoundedCube([tnutX/2, tnutY/2, layer], 0.5);
+                        translate([tnutX/2,tnutY/2,0])
+                            RoundedCube([tnutX/2, tnutY/2, layer], 0.5);
+                    }
                 }
-            }
-            cylinder(h=layer, d=hardX/2, center=true);
-            #for(i = [0:1:2]){
-                translate([hardX/4+hardX*0.03945+((slotX+slotStep)*i),-slotY/2,-layer/2])
-                    RoundedCube([slotX, slotY, layer], 0.25);
-                rotate([0,0,180])
+                cylinder(h=layer, d=hardX/2, center=true);
+                for(i = [0:1:2]){
                     translate([hardX/4+hardX*0.03945+((slotX+slotStep)*i),-slotY/2,-layer/2])
                         RoundedCube([slotX, slotY, layer], 0.25);
-            }
-        } 
+                    rotate([0,0,180])
+                        translate([hardX/4+hardX*0.03945+((slotX+slotStep)*i),-slotY/2,-layer/2])
+                            RoundedCube([slotX, slotY, layer], 0.25);
+                }
+            } 
+        }
     }
     
     // Output
@@ -653,13 +663,49 @@ module cullenect_hardware(hardware) {
     if (hardware == "tnut_1")tnut_1();
     if (hardware == "tnut_2")tnut_2();
 }
-cullenect_hardware("nut_nylon");
 
-*difference(){
-    cullenect_head(head="pan");
-    cullenect_driver(driver="torx");
+// Master function to generate configured label
+module cullenect_label_generate(
+            labelX = labelX,
+            labelY = labelY,
+            labelZ = labelZ,
+            showFastener=Show_Fastener,
+            fastenerHead=Fastener_Head,
+            fastenerShaft=Fastener_Shaft,
+            fastenerThreads=Fastener_Threads,
+            fastenerDriver=Fastener_Driver,
+            fastenerDriverSecurity=Fastener_Driver_Security,
+            hardware=Select_Hardware,
+        ){
+        
+        fastener_pos = [labelX-driverX/2,labelY/2,labelZ];
+        hardware_pos = [labelX-hardX/2,labelY/2,labelZ];
+        
+        // Fastener
+        module fastener(){
+            translate(fastener_pos){
+                union(){
+                    difference(){
+                        cullenect_head(head=fastenerHead);
+                        cullenect_driver(driver=fastenerDriver);
+                    }
+                    cullenect_shaft(shaft=fastenerShaft,threads=fastenerThreads);
+                    if(fastenerDriverSecurity)cullenect_driver(driver="security");
+                }
+            }
+        }
+        
+        // Hardware
+        module hardware(){
+            translate(hardware_pos){
+                cullenect_hardware(hardware);
+            }
+        }
+        
+        if(showFastener)fastener();
+        hardware();
 }
-*cullenect_shaft(shaft="machine",threads="partial");
+cullenect_label_generate();
 
 // Generate Selected Model...
 module selected_model() {
