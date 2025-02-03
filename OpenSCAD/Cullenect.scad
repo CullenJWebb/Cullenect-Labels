@@ -1,6 +1,6 @@
 /* [General Settings] */
 //I want to generate...
-Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume, 20:Vertical Socket, 21:Vertical Socket Negative]
+Select_Output=0; // [0:Label, 01:Label Spacer, 10:Socket Test Fit, 11:Socket Negative Volume, 20:Vertical Socket Test Fit, 21:Vertical Socket Negative]
 //model = "" // ["Cullenect label","Socket test fit","Socket Negative Volume"]
 // Width in gridfinity units
 label_width = 1; // .1
@@ -52,7 +52,7 @@ Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillip
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring:Crimp Ring]
 
 /* [Advanced] */
 
@@ -668,7 +668,6 @@ module cullenect_hardware(hardware) {
     }
     
     // Magnet
-    // Locking Washer
     module magnet(){
         difference(){
             union(){
@@ -679,8 +678,81 @@ module cullenect_hardware(hardware) {
             translate([-hardX/4,0,0])
                     cube([hardX/2,hardNegative,layer], true);
             translate([-hardX/3,0,0])
-                    #cube([hardX*0.1,hardX,layer], true);
+                    cube([hardX*0.1,hardX,layer], true);
         }
+    }
+    
+    // Crimp Fitting Variables
+    crimpX = hardX/2;
+    crimpNegative = hardNegative/2;
+    crimpShaftX = hardX/1.41;
+    crimpShaftY = crimpNegative;
+    
+    // Crimp Shaft
+    module crimp_shaft(shaft="cylinder"){
+        
+        // Wings
+        module shaft_wings(){
+            translate([-crimpNegative/2,crimpShaftY/2,-layer/2])
+            rotate([0,0,180]){
+                union(){
+                    cube([crimpShaftX,crimpShaftY,layer], center=false);
+                    translate([crimpShaftX-(crimpShaftX*0.2),-crimpShaftY*0.2,0])
+                        RoundedCube([crimpShaftX*0.2, crimpShaftY*1.4, layer], 0.25);
+                    translate([crimpShaftX-(crimpShaftX*0.7),-crimpShaftY*0.2,0])
+                        RoundedCube([crimpShaftX*0.4, crimpShaftY*1.4, layer], 0.25);
+                }
+            }
+        }
+        
+        // Cylinder
+        module shaft_cylinder(){
+            translate([-crimpNegative/2,crimpShaftY/2,-layer/2])
+            rotate([0,0,180]){
+                difference(){
+                    union(){
+                        cube([crimpShaftX,crimpShaftY,layer], center=false);
+                        translate([crimpShaftX,crimpShaftY/2,layer/2]){
+                            resize([crimpShaftY/2,0,0])
+                                cylinder(h=layer, d=crimpShaftY*1.2, center=true);
+                        }
+                        translate([crimpNegative/4,crimpShaftY/2,layer/2]){
+                            resize([crimpShaftY/2,0,0])
+                                cylinder(h=layer, d=crimpShaftY*1.2, center=true);
+                        }
+                    }
+                    translate([crimpShaftX,crimpShaftY/2,layer/2]){
+                        #resize([crimpShaftY/5,crimpShaftY*0.8,0])
+                            cylinder(h=layer, d=crimpShaftY*1, center=true);
+                    }
+                }
+            }
+        }
+            
+        // Output
+        if (shaft == "wings")shaft_wings();
+        if (shaft == "cylinder")shaft_cylinder();
+    }
+    
+    // Crimp Ring
+    module crimp_ring(){
+        // Shaft
+        crimp_shaft();
+        // Ring
+        //translate([hardX/4,hardX/4,0])
+        difference(){
+            cylinder(h=layer, d=crimpX, center=true);
+            cylinder(h=layer, d=crimpNegative, center=true);
+        }
+            
+    }
+    
+    // Outline
+    translate([-hardX/2.85,0,0])
+    rotate([0,0,45])
+    difference(){
+            cube([hardX,hardX,layer], center=true);
+            cube([hardX-0.01,hardX-0.01,layer*4], center=true);
     }
     
     // Output
@@ -693,6 +765,7 @@ module cullenect_hardware(hardware) {
     if (hardware == "tnut_1")tnut_1();
     if (hardware == "tnut_2")tnut_2();
     if (hardware == "magnet")magnet();
+    if (hardware == "crimp_ring")crimp_ring();
 }
 
 // Master function to generate configured label
