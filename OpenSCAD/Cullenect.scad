@@ -52,7 +52,7 @@ Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillip
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut (side), tnut_2:T-Nut (top)]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet]
 
 /* [Advanced] */
 
@@ -667,6 +667,22 @@ module cullenect_hardware(hardware) {
         }
     }
     
+    // Magnet
+    // Locking Washer
+    module magnet(){
+        difference(){
+            union(){
+                washer();
+                translate([-hardX/4,0,0])
+                    cube([hardX/2,hardX,layer], true);
+            }
+            translate([-hardX/4,0,0])
+                    cube([hardX/2,hardNegative,layer], true);
+            translate([-hardX/3,0,0])
+                    #cube([hardX*0.1,hardX,layer], true);
+        }
+    }
+    
     // Output
     if (hardware == "washer")washer();
     if (hardware == "washer_locking")washer_locking();
@@ -676,6 +692,7 @@ module cullenect_hardware(hardware) {
     if (hardware == "nut_square")nut_square();
     if (hardware == "tnut_1")tnut_1();
     if (hardware == "tnut_2")tnut_2();
+    if (hardware == "magnet")magnet();
 }
 
 // Master function to generate configured label
