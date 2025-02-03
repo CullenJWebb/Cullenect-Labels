@@ -685,15 +685,16 @@ module cullenect_hardware(hardware) {
     // Crimp Fitting Variables
     crimpX = hardX/2;
     crimpNegative = hardNegative/2;
-    crimpShaftX = hardX/1.41;
-    crimpShaftY = crimpNegative;
     
     // Crimp Shaft
-    module crimp_shaft(shaft="cylinder"){
+    module crimp_shaft(shaft="cylinder",offset=0){
+    
+        crimpShaftX = (hardX/1.41) + offset;
+        crimpShaftY = crimpNegative;
         
         // Wings
         module shaft_wings(){
-            translate([-crimpNegative/2,crimpShaftY/2,-layer/2])
+            translate([(-crimpNegative/2) + offset,crimpShaftY/2,-layer/2])
             rotate([0,0,180]){
                 union(){
                     cube([crimpShaftX,crimpShaftY,layer], center=false);
@@ -707,7 +708,7 @@ module cullenect_hardware(hardware) {
         
         // Cylinder
         module shaft_cylinder(){
-            translate([-crimpNegative/2,crimpShaftY/2,-layer/2])
+            translate([(-crimpNegative/2) + offset,crimpShaftY/2,-layer/2])
             rotate([0,0,180]){
                 difference(){
                     union(){
@@ -722,7 +723,7 @@ module cullenect_hardware(hardware) {
                         }
                     }
                     translate([crimpShaftX,crimpShaftY/2,layer/2]){
-                        #resize([crimpShaftY/5,crimpShaftY*0.8,0])
+                        resize([crimpShaftY/5,crimpShaftY*0.8,0])
                             cylinder(h=layer, d=crimpShaftY*1, center=true);
                     }
                 }
@@ -739,12 +740,30 @@ module cullenect_hardware(hardware) {
         // Shaft
         crimp_shaft();
         // Ring
-        //translate([hardX/4,hardX/4,0])
         difference(){
             cylinder(h=layer, d=crimpX, center=true);
             cylinder(h=layer, d=crimpNegative, center=true);
         }
             
+    }
+    
+    // Crimp Fork
+    module crimp_fork(){
+        // Shaft
+        crimp_shaft(shaft="cylinder",offset=-crimpX*0.3);
+        // Ring
+        difference(){
+                union(){
+                translate([-crimpX/4,0,0])
+                    #cylinder(h=layer, d=crimpX, center=true);
+                translate([-crimpX*0.05,0,0])
+                    cube([crimpX*0.45,crimpX,layer], center=true);
+            }
+            translate([-crimpX/4,0,0])
+                    cylinder(h=layer, d=crimpX/1.5, center=true);
+            translate([crimpX/4,0,0])
+                cube([crimpX,crimpX/1.5,layer], center=true);
+        }  
     }
     
     // Outline
@@ -765,7 +784,8 @@ module cullenect_hardware(hardware) {
     if (hardware == "tnut_1")tnut_1();
     if (hardware == "tnut_2")tnut_2();
     if (hardware == "magnet")magnet();
-    if (hardware == "crimp_ring")crimp_ring();
+    // if (hardware == "crimp_ring")crimp_ring();
+    if (hardware == "crimp_ring")crimp_fork();
 }
 
 // Master function to generate configured label
