@@ -4,10 +4,12 @@ Select_Output=0; // [0:Label, 10:Socket test fit, 11:Socket Negative Volume, 20:
 //model = "" // ["Cullenect label","Socket test fit","Socket Negative Volume"]
 // Width in gridfinity units
 label_width = 1; // .1
-// Generate V1 Latches for 1U labels?
+// Generate V1 Latches for 1U bins?
 backward_compatible = true;
 // Deboss Text?
 label_deboss = false;
+// Text / Icon Color.
+Text_Color = "#333333";
 
 /* [Label Text 1] */
 
@@ -16,7 +18,7 @@ Text1 = "Cullenect";
 // Text Alignment
 Text1_Align = "left"; // ["left","center","right"]
 // Font Size
-Text1_Font_Size = 6;  // .1
+Text1_Font_Size = 5;  // .1
 // Font Family
 Text1_Font = "Open Sans"; // [Open Sans, Open Sans Condensed, Ubuntu, Montserrat]
 
@@ -50,12 +52,9 @@ Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillip
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut (side), tnut_2:T-Nut (top)]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut (side), tnut_2:T-Nut (top)]
 
 /* [Advanced] */
-// Increase or decrease resolution of certain details
-$fs = 0.01;  // .01
-$fa = 1;
 
 // Use gridfinity U
 gridfinity = true;
@@ -68,6 +67,11 @@ labelYmm = 11.0;  // .1
 
 // Thickness of label in mm
 labelZmm = 1.2;  // .1
+
+// Increase or decrease resolution of certain details
+$fs = 0.01;  // .01
+// Increase or decrease resolution of certain details
+$fa = 1;
 
 /* [Hidden] */
 gridfinityX = 42; // Grid size for gridfinity units.
@@ -177,7 +181,7 @@ Text1_posX = (Text1_Align == "left") ? 0 + Text1_XY.x :
             (Text1_Align == "center") ? (labelX / 2) + Text1_XY.x : 
             (Text1_Align == "right") ? labelX + Text1_XY.x : 0; // Fallback to 0
 Text1_posY = (labelY / 2) + Text1_XY.y;
-Text1_posZ = labelZ - 0.2;
+Text1_posZ = labelZ;
 Text1_pos = [Text1_posX, Text1_posY, Text1_posZ];
 
 // Calculate Text2 Position and font
@@ -185,20 +189,20 @@ Text2_posX = (Text2_Align == "left") ? 0 + Text2_XY.x :
             (Text2_Align == "center") ? (labelX / 2) + Text2_XY.x : 
             (Text2_Align == "right") ? labelX + Text2_XY.x : 0; // Fallback to 0
 Text2_posY = (labelY / 2) + Text2_XY.y;
-Text2_posZ = labelZ - 0.2;
+Text2_posZ = labelZ;
 Text2_pos = [Text2_posX, Text2_posY, Text2_posZ];
 
 // Generate Label Text #1
-module label_text1() {
-	translate(Text1_pos)
-		linear_extrude(0.4)
+module label_text1(Text1Pos=Text1_pos) {
+	translate(Text1Pos)
+		linear_extrude(layer + fudge)
 			text(Text1, Text1_Font_Size, font = str(Text1_Font, ":", Text1_Font_Style), halign = Text1_Align, valign = "center");
 }
 
 // Generate Label Text #2
-module label_text2() {
-	translate(Text2_pos)
-		linear_extrude(0.4)
+module label_text2(Text2Pos=Text2_pos) {
+	translate(Text2Pos)
+		linear_extrude(layer + fudge)
 			text(Text2, Text2_Font_Size, font = str(Text2_Font, ":", Text2_Font_Style), halign = Text2_Align, valign = "center");
 }
 		
@@ -507,7 +511,7 @@ module cullenect_shaft(shaft="machine",threads="full"){
     // Output
     if (shaft == "machine")machine();
     if (shaft == "tapping")tapping();
-    if ((threads!="none"))threads();
+    if ((threads!="none" && shaft!="none"))threads();
     
 }
 
@@ -579,6 +583,14 @@ module cullenect_hardware(hardware) {
         }
     }
     
+    // Nut
+    module nut_square(){
+        difference(){
+            cube([hardX,hardX,layer], true);
+            cylinder(h=layer, d=hardNegative, center=true);
+        }
+    }
+    
     // Nut Nylon Lock
     module nut_nylon(){
         difference(){
@@ -605,18 +617,19 @@ module cullenect_hardware(hardware) {
         // They should all be the same size and not require special translates for each
         translate([-((tnutX-hardX)/2),0,0]){
             difference(){
-                translate([-tnutX/2,-tnutY2/2,-layer/2])
+                translate([-tnutX/2,-tnutY2/2,-layer/2]){
                     union(){
-                        #RoundedCube([tnutX, tnutY, layer], 0.5);
+                        RoundedCube([tnutX, tnutY, layer], 0.5);
                         translate([(tnutX-tnutX2)/2,0,0])
                             RoundedCube([tnutX2, tnutY2, layer], 0.5);
                     }
-                    #translate([-tnutX/2,-tnutY/2,])
-                        rotate([0,0,45])
-                            cube([tnutCorner,tnutCorner,layer],true);
-                    translate([tnutX/2,-tnutY/2,])
-                        rotate([0,0,45])
-                            cube([tnutCorner,tnutCorner,layer],true);
+                }
+                translate([-tnutX/2,-tnutY2/2,0])
+                    rotate([0,0,45])
+                        cube([tnutCorner,tnutCorner,layer],true);
+                translate([tnutX/2,-tnutY2/2,0])
+                    rotate([0,0,45])
+                        cube([tnutCorner,tnutCorner,layer],true);
             }
         }
     }
@@ -660,6 +673,7 @@ module cullenect_hardware(hardware) {
     if (hardware == "threaded_insert")threaded_insert();
     if (hardware == "nut")nut();
     if (hardware == "nut_nylon")nut_nylon();
+    if (hardware == "nut_square")nut_square();
     if (hardware == "tnut_1")tnut_1();
     if (hardware == "tnut_2")tnut_2();
 }
@@ -669,6 +683,7 @@ module cullenect_label_generate(
             labelX = labelX,
             labelY = labelY,
             labelZ = labelZ,
+            layer = layer,
             showFastener=Show_Fastener,
             fastenerHead=Fastener_Head,
             fastenerShaft=Fastener_Shaft,
@@ -678,8 +693,9 @@ module cullenect_label_generate(
             hardware=Select_Hardware,
         ){
         
-        fastener_pos = [labelX-driverX/2,labelY/2,labelZ];
-        hardware_pos = [labelX-hardX/2,labelY/2,labelZ];
+        marginRight = (labelY - hardX) / 2;
+        fastener_pos = [labelX-driverX/2,labelY/2,labelZ+layer/2];
+        hardware_pos = [labelX-(hardX/2)-marginRight,labelY/2,labelZ+layer/2];
         
         // Fastener
         module fastener(){
@@ -702,10 +718,28 @@ module cullenect_label_generate(
             }
         }
         
-        if(showFastener)fastener();
-        hardware();
+        // Text, hardware, fastener
+        module everything(){
+            label_text1();
+			label_text2();
+            if(showFastener)fastener();
+            hardware();
+        }
+        
+        // Emboss or Deboss everything
+        if (label_deboss) {
+            difference(){
+                color("silver")Cullenect_Label();
+                translate([0,0,-layer])
+                    color(Text_Color)everything();
+            }
+        } else{
+            union(){
+                color("silver")Cullenect_Label();
+                color(Text_Color)everything();
+            }
+        }
 }
-cullenect_label_generate();
 
 // Generate Selected Model...
 module selected_model() {
@@ -713,7 +747,7 @@ module selected_model() {
     else if (Select_Output == 11) {cullenect_socket_negative();}
     else if (Select_Output == 20) {cullenect_vertical_socket();}
     else if (Select_Output == 21) {cullenect_vertical_socket_negative();}
-    else                          {cullenect_label_text();}
+    else                          {cullenect_label_generate();}
 }
 selected_model();
 		
