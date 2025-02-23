@@ -52,7 +52,7 @@ Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillip
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring:Crimp Ring]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_recepticle_open:Crimp Recepticle - Open, crimp_recepticle_closed:Crimp Recepticle - Closed]
 
 /* [Advanced] */
 
@@ -552,7 +552,7 @@ module cullenect_hardware(hardware) {
                 polygon(points=[[0,0],[stripeX,0],[stripeX*2.5,-stripeY],[stripeX*1.5,-stripeY]]);
         }
     
-        translate([-hardX/2,-hardX/2,layer/2])
+        translate([-hardX/2,-hardX/2,-layer/2])
             difference(){
                 union(){
                     RoundedCube([hardX, hardX/4, layer], 0.2); // Top of insert
@@ -678,22 +678,22 @@ module cullenect_hardware(hardware) {
             translate([-hardX/4,0,0])
                     cube([hardX/2,hardNegative,layer], true);
             translate([-hardX/3,0,0])
-                    cube([hardX*0.1,hardX,layer], true);
+                    cube([hardX*0.05,hardX,layer], true);
         }
     }
     
     // Crimp Fitting Variables
-    crimpX = hardX/2;
-    crimpNegative = hardNegative/2;
+    crimpX = hardX*0.8;
+    crimpNegative = hardNegative*0.8;
     
     // Crimp Shaft
-    module crimp_shaft(shaft="cylinder",offset=0){
+    module crimp_barrel(barrel="closed",offset=0){
     
-        crimpShaftX = (hardX/1.41) + offset;
+        crimpShaftX = crimpX + offset;
         crimpShaftY = crimpNegative;
         
         // Wings
-        module shaft_wings(){
+        module barrel_open(){
             translate([(-crimpNegative/2) + offset,crimpShaftY/2,-layer/2])
             rotate([0,0,180]){
                 union(){
@@ -707,7 +707,7 @@ module cullenect_hardware(hardware) {
         }
         
         // Cylinder
-        module shaft_cylinder(){
+        module barrel_closed(){
             translate([(-crimpNegative/2) + offset,crimpShaftY/2,-layer/2])
             rotate([0,0,180]){
                 difference(){
@@ -731,47 +731,87 @@ module cullenect_hardware(hardware) {
         }
             
         // Output
-        if (shaft == "wings")shaft_wings();
-        if (shaft == "cylinder")shaft_cylinder();
+        if (barrel == "open")barrel_open();
+        if (barrel == "closed")barrel_closed();
     }
     
     // Crimp Ring
-    module crimp_ring(){
-        // Shaft
-        crimp_shaft();
-        // Ring
-        difference(){
-            cylinder(h=layer, d=crimpX, center=true);
-            cylinder(h=layer, d=crimpNegative, center=true);
+    module crimp_ring(barrel="closed"){
+        translate([hardX*0.1,0,0]){
+            // Barrel
+            crimp_barrel(barrel);
+            // Ring
+            difference(){
+                cylinder(h=layer, d=crimpX, center=true);
+                cylinder(h=layer, d=crimpNegative, center=true);
+            }
         }
-            
     }
     
     // Crimp Fork
-    module crimp_fork(){
-        // Shaft
-        crimp_shaft(shaft="cylinder",offset=-crimpX*0.3);
-        // Ring
-        difference(){
-                union(){
-                translate([-crimpX/4,0,0])
-                    #cylinder(h=layer, d=crimpX, center=true);
-                translate([-crimpX*0.05,0,0])
-                    cube([crimpX*0.45,crimpX,layer], center=true);
+    module crimp_fork(barrel="closed"){
+        translate([hardX*0.13,0,0]){
+            // Barrel
+            crimp_barrel(barrel,offset=-crimpX*0.1);
+            // Fork
+            difference(){
+                    union(){
+                        cylinder(h=layer, d=crimpX, center=true);
+                    translate([crimpX*0.25,0,0])
+                        cube([crimpX*0.45,crimpX,layer], center=true);
+                }
+                cylinder(h=layer, d=crimpX/1.5, center=true);
+                #translate([crimpX/4,0,0])
+                    cube([crimpX/2,crimpX/1.5,layer], center=true);
             }
-            translate([-crimpX/4,0,0])
-                    cylinder(h=layer, d=crimpX/1.5, center=true);
-            translate([crimpX/4,0,0])
-                cube([crimpX,crimpX/1.5,layer], center=true);
-        }  
+        }
     }
     
-    // Outline
-    translate([-hardX/2.85,0,0])
-    rotate([0,0,45])
-    difference(){
-            cube([hardX,hardX,layer], center=true);
-            cube([hardX-0.01,hardX-0.01,layer*4], center=true);
+    // Crimp Spade
+    module crimp_spade(barrel="closed"){
+        translate([hardX*0.1,0,0]){
+            // Barrel
+            crimp_barrel(barrel,offset=-crimpX*0.1);
+            // Spade
+            difference(){
+                linear_extrude(layer)
+                    polygon(points=[
+                        [-crimpX*0.4,crimpNegative/2],
+                        [-crimpX/4,crimpX*0.4],
+                        [crimpX/3,crimpX*0.4],
+                        [crimpX/2,crimpX/4],
+                        [crimpX/2,-crimpX/4],
+                        [crimpX/3,-crimpX*0.4],
+                        [-crimpX/4,-crimpX*0.4],
+                        [-crimpX*0.4,-crimpNegative/2],
+                    ]);
+                    translate([crimpX*0.1,0,layer/2])
+                        #cylinder(h=layer, d=crimpNegative/4, center=true);
+            }
+        }
+    }
+    
+    // Crimp Recepticle
+    module crimp_recepticle(barrel="closed"){
+        translate([hardX*0.06,0,0]){
+            // Barrel
+            crimp_barrel(barrel,offset=-crimpX*0.1);
+            // Recepticle
+            difference(){
+                union(){
+                    cube([crimpX*0.85,crimpX*0.7,layer], center=true);
+                    translate([-crimpX*0.45,crimpX*0.12,-layer/2])
+                        RoundedCube([crimpX, crimpX*0.3, layer], 0.5);
+                    translate([-crimpX*0.45,-crimpX*0.42,-layer/2])
+                        RoundedCube([crimpX, crimpX*0.3, layer], 0.5);
+                }
+                cube([crimpX*0.06,crimpX*0.3,layer], center=true);
+                translate([-crimpX/6,0,0])
+                    cube([crimpX*0.06,crimpX*0.3,layer], center=true);
+                translate([crimpX/6,0,0])
+                    cube([crimpX*0.06,crimpX*0.3,layer], center=true);
+            }
+        }
     }
     
     // Output
@@ -784,8 +824,14 @@ module cullenect_hardware(hardware) {
     if (hardware == "tnut_1")tnut_1();
     if (hardware == "tnut_2")tnut_2();
     if (hardware == "magnet")magnet();
-    // if (hardware == "crimp_ring")crimp_ring();
-    if (hardware == "crimp_ring")crimp_fork();
+    if (hardware == "crimp_ring_open")crimp_ring(barrel="open");
+    if (hardware == "crimp_ring_closed")crimp_ring(barrel="closed");
+    if (hardware == "crimp_fork_open")crimp_fork(barrel="open");
+    if (hardware == "crimp_fork_closed")crimp_fork(barrel="closed");
+    if (hardware == "crimp_spade_open")crimp_spade(barrel="open");
+    if (hardware == "crimp_spade_closed")crimp_spade(barrel="closed");
+    if (hardware == "crimp_recepticle_open")crimp_recepticle(barrel="open");
+    if (hardware == "crimp_recepticle_closed")crimp_recepticle(barrel="closed");
 }
 
 // Master function to generate configured label
