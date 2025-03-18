@@ -73,6 +73,8 @@ labelYmm = 11.0;  // .1
 // Thickness of label in mm
 labelZmm = 1.2;  // .1
 
+layer = 0.2; // Layer height of text and icons (careful)
+
 // Increase or decrease resolution of certain details
 $fs = 0.01;  // .01
 // Increase or decrease resolution of certain details
@@ -85,7 +87,6 @@ labelY = (gridfinity) ? 11 + offset_xy.y : labelYmm;
 labelZ = (gridfinity) ? 1.2 : labelZmm;
 latchX = 0.2; // Width of socket on label walls
 latchZ = 0.6; // Z-height of wall socket
-layer = 0.2; // Layer height of text and icons
 fudge = 0.0001; // Fix render for exact booleans
 
 
