@@ -6,8 +6,8 @@ Select_Output=0; // [0:Label, 01:Label Spacer, 10:Socket Test Fit, 11:Socket Neg
 label_width = 1; // .1
 // Generate V1 Latches for 1U bins?
 backward_compatible = true;
-// Deboss Text?
-label_deboss = false;
+// Flush is 3MF only
+label_surface = 00; // [00:Emboss, 01:Deboss, 02:Flush]
 // Text / Icon Color.
 Text_Color = "#333333";
 
@@ -48,6 +48,8 @@ Fastener_Head="socket"; // [none:None, socket:Socket, countersunk:Countersunk, r
 Fastener_Shaft="machine"; // [none:None, machine:Machine, tapping:Tapping]
 Fastener_Threads="full"; // [none:None, full:Full, partial:Partial]
 Fastener_Driver="phillips"; // [none:None, slot:Slot, phillips:Phillips, phillips_slot:Phillips Slot, phillips_square:Phillips Square, torx:Torx/Star, hex:Hex, square:Robertson/Square, triangle:Triangle]
+// Toggle flanged head
+Fastener_Head_Flange=false;
 // Toggle securty nub in center of driver
 Fastener_Driver_Security=false;
 
@@ -55,6 +57,9 @@ Fastener_Driver_Security=false;
 Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_recepticle_open:Crimp Recepticle - Open, crimp_recepticle_closed:Crimp Recepticle - Closed]
 
 /* [Advanced] */
+
+//Ajust fitment for X and Y dimensions
+offset_xy = [0,0]; // .1
 
 // Use gridfinity U
 gridfinity = true;
@@ -75,8 +80,8 @@ $fa = 1;
 
 /* [Hidden] */
 gridfinityX = 42; // Grid size for gridfinity units.
-labelX = (gridfinity) ? (label_width * gridfinityX) - 6 : labelXmm;
-labelY = (gridfinity) ? 11 : labelYmm;
+labelX = (gridfinity) ? ((label_width * gridfinityX) - 6) + offset_xy.x : labelXmm;
+labelY = (gridfinity) ? 11 + offset_xy.y : labelYmm;
 labelZ = (gridfinity) ? 1.2 : labelZmm;
 latchX = 0.2; // Width of socket on label walls
 latchZ = 0.6; // Z-height of wall socket
@@ -96,15 +101,15 @@ fudge = 0.0001; // Fix render for exact booleans
 
 // V1 Label with new wall sockets
 // Will only generate V1 label XY with V2 label Z
-module Cullenect_Label_V1() {
+module cullenect_base_v1(offset_xy = offset_xy) {
 
 	// Variables
-	labelX_v1 = 36;
-	labelY_v1 = 11;
-	$midX1 = 4.695;
+	labelX_v1 = 36 + offset_xy.x;
+	labelY_v1 = 11 + offset_xy.y;
+	$midX1 = 4.695 + (offset_xy.x / 2);
 	$midX2 = 10.18;
 	$midlatchX = 1.95;
-	$bottomX1 = 5.395;
+	$bottomX1 = 5.395 + (offset_xy.x / 2);
 	$bottomX2 = 11.18;
 	$bottomlatchX = 0.95;
 	
@@ -151,7 +156,14 @@ module Cullenect_Label_V1() {
 }
 
 // V2 Label without backward compatibility
-module Cullenect_Label_V2() {
+module cullenect_base_v2(
+            offset_xy = offset_xy,
+            labelX = labelX,
+            labelY = labelY,
+            labelZ = labelZ,
+            latchX = latchX,
+        ){
+    
 	// Label base below socket
 	color("Silver")
 	RoundedCube([labelX, labelY, 0.2], 0.5);
@@ -168,18 +180,18 @@ module Cullenect_Label_V2() {
 }
 
 // Module to generate the correct label type
-module Cullenect_Label() {
+module cullenect_base() {
 	if (backward_compatible && gridfinity && (label_width == 1)){
-		Cullenect_Label_V1();
+		cullenect_base_v1();
 	} else {
-		Cullenect_Label_V2();
+		cullenect_base_v2();
 	}
 }
 
 // Calculate Text1 Position and font
 Text1_posX = (Text1_Align == "left") ? 0 + Text1_XY.x : 
-            (Text1_Align == "center") ? (labelX / 2) + Text1_XY.x : 
-            (Text1_Align == "right") ? labelX + Text1_XY.x : 0; // Fallback to 0
+            (Text1_Align == "center") ? (offset_xy.x + labelX / 2) + Text1_XY.x : 
+            (Text1_Align == "right") ? labelX + Text1_XY.x + offset_xy.x : 0; // Fallback to 0
 Text1_posY = (labelY / 2) + Text1_XY.y;
 Text1_posZ = labelZ;
 Text1_pos = [Text1_posX, Text1_posY, Text1_posZ];
@@ -193,36 +205,31 @@ Text2_posZ = labelZ;
 Text2_pos = [Text2_posX, Text2_posY, Text2_posZ];
 
 // Generate Label Text #1
-module label_text1(Text1Pos=Text1_pos) {
+module label_text1(
+            Text1 = Text1,
+            Text1_Font = Text1_Font,
+            Text1_Font_Style = Text1_Font_Style,
+            Text1_Font_Size = Text1_Font_Size,
+            Text1_Align = Text1_Align,
+            Text1Pos = Text1_pos
+        ) {
 	translate(Text1Pos)
 		linear_extrude(layer + fudge)
 			text(Text1, Text1_Font_Size, font = str(Text1_Font, ":", Text1_Font_Style), halign = Text1_Align, valign = "center");
 }
 
 // Generate Label Text #2
-module label_text2(Text2Pos=Text2_pos) {
+module label_text2(
+            Text2 = Text2,
+            Text2_Font = Text2_Font,
+            Text2_Font_Style = Text2_Font_Style,
+            Text2_Font_Size = Text2_Font_Size,
+            Text2_Align = Text2_Align,
+            Text2Pos = Text2_pos
+        ) {
 	translate(Text2Pos)
 		linear_extrude(layer + fudge)
 			text(Text2, Text2_Font_Size, font = str(Text2_Font, ":", Text2_Font_Style), halign = Text2_Align, valign = "center");
-}
-		
-// Join or difference the label and text
-module cullenect_label_text(){
-	if (label_deboss) {
-		difference() {
-			Cullenect_Label();
-			color("Gray")
-				label_text1();
-			label_text2();
-		}
-	} else {
-		union() {
-			Cullenect_Label();
-			color("Gray")
-				label_text1();
-			label_text2();
-		}
-	}
 }
 
 // Socket and Socket Negative Variables
@@ -232,7 +239,13 @@ socketX = labelX + socket_offset;
 socketY = labelY + socket_offset;
 ribZ = 0.4;
 // Generate socket
-module cullenect_socket(){
+module cullenect_socket(
+            socket_offset = socket_offset,
+            socket_walls = socket_walls,
+            socketX = socketX,
+            socketY = socketY,
+            ribZ = ribZ,
+        ){
 	union(){
 		difference(){
 			translate([-socket_walls,-socket_walls,-1])
@@ -273,7 +286,13 @@ vsocketDepth = (vsocketY * 2) + latchZ; // Total depth of vsocket
 // Generate vertical socket
 // Unlike the h-socket and label this starts with the negative volume due to easier rounded edges
 // Rounded edges are needed for the vertical printing of the ribbing
-module cullenect_vertical_socket_negative() {
+module cullenect_vertical_socket_negative(
+            vsocketOffset = vsocketOffset,
+            vsocketX = vsocketX,
+            vsocketY = vsocketY,
+            vsocketZ = vsocketZ,
+            vsocketDepth = vsocketDepth,
+        ) {
 	difference(){
 		// Create base 
 		union(){
@@ -316,7 +335,15 @@ shaftX = headY * 0.856; // Length of fastener shaft
 shaftY = headY/2;
 
 // Generate Driver Icon
-module cullenect_driver(driver="none") {
+module cullenect_driver(
+            driver="none",
+            driverX = driverX,
+            driverWidth = driverWidth,
+            driverLength = driverLength,
+            headY = headY,
+            shaftX = shaftX,
+            shaftY = shaftY,
+        ) {
     
     // Blank
     module blank(){
@@ -415,7 +442,10 @@ module cullenect_driver(driver="none") {
 }
 
 // Generate Screw Head
-module cullenect_head(head="socket"){
+module cullenect_head(
+            head = "socket",
+            flange = false,
+        ){
     
     // Socket
     module socket(){
@@ -453,11 +483,19 @@ module cullenect_head(head="socket"){
         }
     }
     
+    // Flange
+    flangeX = driverX / 4;
+    module flange(){
+        translate([-(driverX/2) + (flangeX/2),0,0])
+        cube([flangeX,labelY,layer], true);
+    }
+    
     // Output
     if (head == "socket")socket();
     if (head == "countersunk")countersunk();
     if (head == "roundh")roundh();
     if (head == "pan")pan();
+    if (flange == true && head != "countersunk")flange();
 }
 
 // Generate Fastener Shaft
@@ -846,6 +884,7 @@ module cullenect_label_generate(
             fastenerThreads=Fastener_Threads,
             fastenerDriver=Fastener_Driver,
             fastenerDriverSecurity=Fastener_Driver_Security,
+            fastenerHeadFlange=Fastener_Head_Flange,
             hardware=Select_Hardware,
         ){
         
@@ -858,7 +897,7 @@ module cullenect_label_generate(
             translate(fastener_pos){
                 union(){
                     difference(){
-                        cullenect_head(head=fastenerHead);
+                        cullenect_head(head=fastenerHead,flange=fastenerHeadFlange);
                         cullenect_driver(driver=fastenerDriver);
                     }
                     cullenect_shaft(shaft=fastenerShaft,threads=fastenerThreads);
@@ -883,15 +922,24 @@ module cullenect_label_generate(
         }
         
         // Emboss or Deboss everything
-        if (label_deboss) {
+        if (label_surface == 01) {
+            // Deboss
             difference(){
-                color("silver")Cullenect_Label();
+                color("silver")cullenect_base();
                 translate([0,0,-layer])
                     color(Text_Color)everything();
             }
-        } else{
+        } else if (label_surface == 02) {
+            // Flush
             union(){
-                color("silver")Cullenect_Label();
+                color("silver")cullenect_base();
+                translate([0,0,-(layer - fudge)])
+                    color(Text_Color)everything();
+            }
+        } else{
+            // Emboss
+            union(){
+                color("silver")cullenect_base();
                 color(Text_Color)everything();
             }
         }
