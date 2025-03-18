@@ -54,7 +54,7 @@ Fastener_Head_Flange=false;
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_recepticle_open:Crimp Recepticle - Open, crimp_recepticle_closed:Crimp Recepticle - Closed]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed]
 
 /* [Advanced] */
 
@@ -829,12 +829,12 @@ module cullenect_hardware(hardware) {
         }
     }
     
-    // Crimp Recepticle
-    module crimp_recepticle(barrel="closed"){
+    // Crimp Receptacle
+    module crimp_receptacle(barrel="closed"){
         translate([hardX*0.06,0,0]){
             // Barrel
             crimp_barrel(barrel,offset=-crimpX*0.1);
-            // Recepticle
+            // Receptacle
             difference(){
                 union(){
                     cube([crimpX*0.85,crimpX*0.7,layer], center=true);
@@ -868,8 +868,8 @@ module cullenect_hardware(hardware) {
     if (hardware == "crimp_fork_closed")crimp_fork(barrel="closed");
     if (hardware == "crimp_spade_open")crimp_spade(barrel="open");
     if (hardware == "crimp_spade_closed")crimp_spade(barrel="closed");
-    if (hardware == "crimp_recepticle_open")crimp_recepticle(barrel="open");
-    if (hardware == "crimp_recepticle_closed")crimp_recepticle(barrel="closed");
+    if (hardware == "crimp_receptacle_open")crimp_receptacle(barrel="open");
+    if (hardware == "crimp_receptacle_closed")crimp_receptacle(barrel="closed");
 }
 
 // Master function to generate configured label
