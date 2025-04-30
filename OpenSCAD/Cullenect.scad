@@ -812,7 +812,8 @@ module cullenect_hardware(hardware) {
             // Barrel
             crimp_barrel(barrel,offset=-crimpX*0.1);
             // Spade
-            difference(){
+            translate([0,0,-layer/2])
+            #difference(){
                 linear_extrude(layer)
                     polygon(points=[
                         [-crimpX*0.4,crimpNegative/2],
