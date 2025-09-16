@@ -54,7 +54,7 @@ Fastener_Head_Flange=false;
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, standoff:Standoff, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, standoff_ff:Standoff (Female-Female), standoff_mf:Standoff (Male-Female), nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed]
 
 /* [Advanced] */
 
@@ -614,8 +614,8 @@ module cullenect_hardware(hardware) {
             }
     }
 
-    // Standoff
-    module standoff(){
+    // Standoff (Female-Female)
+    module standoff_ff(){
         
         standoffSize = hardX*0.5;
         standoffHoleDia = hardNegative*0.5;
@@ -629,6 +629,18 @@ module cullenect_hardware(hardware) {
             translate([standoffSize/2, 0, 0])
             cylinder(h=layer, d=standoffHoleDia, center=true);
         }
+    }
+
+    // Standoff (Male-Female)
+    module standoff_mf(){
+
+        shaftSize = hardX*0.15;
+
+        //union(){
+            standoff_ff();
+            translate([-shaftSize*2.5, -shaftSize/2, -layer/2])
+                RoundedCube([shaftSize*1.5, shaftSize, layer], 0.7);
+        //}
     }
 
     // Nut
@@ -875,7 +887,8 @@ module cullenect_hardware(hardware) {
     if (hardware == "washer")washer();
     if (hardware == "washer_locking")washer_locking();
     if (hardware == "threaded_insert")threaded_insert();
-    if (hardware == "standoff")standoff();
+    if (hardware == "standoff_ff")standoff_ff();
+    if (hardware == "standoff_mf")standoff_mf();
     if (hardware == "nut")nut();
     if (hardware == "nut_nylon")nut_nylon();
     if (hardware == "nut_square")nut_square();
