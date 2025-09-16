@@ -636,11 +636,11 @@ module cullenect_hardware(hardware) {
 
         shaftSize = hardX*0.15;
 
-        //union(){
+        union(){
             standoff_ff();
             translate([-shaftSize*2.5, -shaftSize/2, -layer/2])
                 RoundedCube([shaftSize*1.5, shaftSize, layer], 0.7);
-        //}
+        }
     }
 
     // Nut
