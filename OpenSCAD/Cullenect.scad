@@ -634,12 +634,12 @@ module cullenect_hardware(hardware) {
     // Standoff (Male-Female)
     module standoff_mf(){
 
-        shaftSize = hardX*0.15;
+        shaftSize = hardX*0.25;
 
         union(){
             standoff_ff();
-            translate([-shaftSize*2.5, -shaftSize/2, -layer/2])
-                RoundedCube([shaftSize*1.5, shaftSize, layer], 0.7);
+            translate([-shaftSize*1.5, -shaftSize/2, -layer/2])
+                RoundedCube([shaftSize*1.5, shaftSize, layer], 1.2);
         }
     }
 
