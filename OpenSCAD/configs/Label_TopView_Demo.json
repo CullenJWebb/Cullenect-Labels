@@ -1,0 +1,8 @@
+{
+   "filename": "Label_TopView_Demo",
+   "vars": {
+      "Show_Fastener": "true",
+      "Fastener_View": "top",
+      "Fastener_Head": "pan"
+   }
+}
