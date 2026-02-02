@@ -1,2 +1,16 @@
+# Generated models
+OpenSCAD/output/
+output/
 *.stl
 *.step
+*.3mf
+*.png
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS
+.DS_Store
+Thumbs.db
