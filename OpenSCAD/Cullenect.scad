@@ -54,7 +54,7 @@ Fastener_Head_Flange=false;
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed, crimp_butt_splice:Crimp Butt Splice]
 
 /* [Advanced] */
 
@@ -853,6 +853,17 @@ module cullenect_hardware(hardware) {
             }
         }
     }
+    // Crimp Butt Splice
+    module crimp_butt_splice(barrel="closed"){
+        leftBarrelOffset = crimpX*-0.2;
+        rightBarrelOffset = -crimpX*1.08-leftBarrelOffset;
+
+        translate([-leftBarrelOffset,0,0])
+            crimp_barrel(barrel,offset=-crimpX*0.1);
+        rotate([0,0,180])
+            translate([-rightBarrelOffset,0,0])
+                crimp_barrel(barrel,offset=-crimpX*0.1);
+    }
     
     // Output
     if (hardware == "washer")washer();
@@ -872,6 +883,7 @@ module cullenect_hardware(hardware) {
     if (hardware == "crimp_spade_closed")crimp_spade(barrel="closed");
     if (hardware == "crimp_receptacle_open")crimp_receptacle(barrel="open");
     if (hardware == "crimp_receptacle_closed")crimp_receptacle(barrel="closed");
+    if (hardware == "crimp_butt_splice")crimp_butt_splice();
 }
 
 // Master function to generate configured label
