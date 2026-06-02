@@ -54,7 +54,7 @@ Fastener_Head_Flange=false;
 Fastener_Driver_Security=false;
 
 /* [Hardware Icon] */
-Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed, wire_nut:Wire Nut]
+Select_Hardware="none"; // [none:None, washer:Washer, washer_locking:Locking Washer, threaded_insert:Threaded Insert, nut:Nut, nut_square:Square Nut, nut_nylon:Nylon Lock Nut, tnut_1:T-Nut Side, tnut_2:T-Nut Top, magnet:Magnet, crimp_ring_open:Crimp Ring - Open, crimp_ring_closed:Crimp Ring - Closed, crimp_fork_open:Crimp Fork - Open, crimp_fork_closed:Crimp Fork - Closed, crimp_spade_open:Crimp Spade - Open, crimp_spade_closed:Crimp Spade - Closed, crimp_receptacle_open:Crimp Receptacle - Open, crimp_receptacle_closed:Crimp Receptacle - Closed, wire_nut:Wire Nut, wire_nut_water:Wire Nut (Waterproof)]
 
 /* [Advanced] */
 
@@ -862,6 +862,14 @@ module cullenect_hardware(hardware) {
                 scale([hardX*1.2/62.402642, hardX*0.76/40.959778, 1])
                     import("icons/wire_nut.svg", center=true);
     }
+
+    // Waterproof Wire Nut (imported from SVG artwork)
+    module wire_nut_water(){
+        translate([-hardX*0.16,0,0])
+        linear_extrude(height=layer, center=true)
+            scale([hardX*1/42, hardX*1/42, 1])
+                import("icons/wire_nut_water.svg", center=true);
+    }
     
     // Output
     if (hardware == "washer")washer();
@@ -882,6 +890,7 @@ module cullenect_hardware(hardware) {
     if (hardware == "crimp_receptacle_open")crimp_receptacle(barrel="open");
     if (hardware == "crimp_receptacle_closed")crimp_receptacle(barrel="closed");
     if (hardware == "wire_nut")wire_nut();
+    if (hardware == "wire_nut_water")wire_nut_water();
 }
 
 // Master function to generate configured label
