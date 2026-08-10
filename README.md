@@ -5,6 +5,7 @@ A standardized system of swappable 3D printed labels for Gridfinity and more. Th
 * [Cullenect Labels On Makerworld](https://makerworld.com/en/models/446624) - Pre sliced profiles for various hardware. Makeworld Customizer better supports color than vanilla OpenSCAD (for now).
 * [gflabel by ndevenish](https://github.com/ndevenish/gflabel/) - A Python script to generate labels. Easy to automate and customize, supports many hardware and electronic icons.
 * [Gridfinity Extended by ostat](https://github.com/ostat/gridfinity_extended_openscad) - A fork of Gridfinity with additional features and improvement. Generate bins with built in slots for Cullenect labels.
+* [Cullenect Label Planner by dwfinkelstein](https://github.com/dwfinkelstein/cullenect-label-planner) - Keep a library of the labels you actually use, pick icons by looking at them, and export colored 3MF for one label or a whole packed build plate.
 
 ## Contributors
 Thank you for the feedback and collaboration.
